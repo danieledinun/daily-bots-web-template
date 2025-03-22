@@ -1,70 +1,55 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DailyVoiceClient } from "realtime-ai-daily";
-import { VoiceClientAudio, VoiceClientProvider } from "realtime-ai-react";
+import { RTVIClient } from "@pipecat-ai/client-js";
+import { DailyTransport } from "@pipecat-ai/daily-transport";
+import { RTVIClientAudio, RTVIClientProvider } from "@pipecat-ai/client-react";
+import { 
+  defaultServices, 
+  defaultConfig, 
+  defaultEndpoints,
+  BOT_READY_TIMEOUT 
+} from "../rtvi.config";
 
 import App from "./App";
 
 export default function Home() {
-  const [dailyVoiceClient, setDailyVoiceClient] =
-    useState<DailyVoiceClient | null>(null);
+  const [voiceClient, setVoiceClient] = useState<RTVIClient | null>(null);
 
   useEffect(() => {
-    if (dailyVoiceClient) {
+    if (voiceClient) {
       return;
     }
 
-    const voiceClient = new DailyVoiceClient({
-      baseUrl: "/api",
-      services: {
-        llm: "together",
-        tts: "cartesia",
+    const newVoiceClient = new RTVIClient({
+      transport: new DailyTransport(),
+      params: {
+        baseUrl: `/api`,
+        requestData: {
+          services: defaultServices,
+          config: defaultConfig,
+        },
+        endpoints: defaultEndpoints,
       },
-      config: [
-        {
-          service: "tts",
-          options: [
-            { name: "voice", value: "79a125e8-cd45-4c13-8a67-188112f4dd22" },
-          ],
-        },
-        {
-          service: "llm",
-          options: [
-            {
-              name: "model",
-              value: "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-            },
-            {
-              name: "initial_messages",
-              value: [
-                {
-                  role: "system",
-                  content:
-                    "You are a assistant called ExampleBot. You can ask me anything. Keep responses brief and legible.",
-                },
-              ],
-            },
-            { name: "run_on_config", value: true },
-          ],
-        },
-      ],
+      enableMic: true,
+      enableCam: true,
+      timeout: BOT_READY_TIMEOUT,
     });
 
-    setDailyVoiceClient(voiceClient);
-  }, [dailyVoiceClient]);
+    setVoiceClient(newVoiceClient);
+  }, [voiceClient]);
 
   return (
-    <VoiceClientProvider voiceClient={dailyVoiceClient!}>
+    <RTVIClientProvider client={voiceClient!}>
       <>
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
           <div className="flex flex-col gap-4 items-center">
-            <h1 className="text-4xl font-bold">My First Daily Bot</h1>
+            <h1 className="text-4xl font-bold">My Daily Bot</h1>
             <App />
           </div>
         </main>
-        <VoiceClientAudio />
+        <RTVIClientAudio />
       </>
-    </VoiceClientProvider>
+    </RTVIClientProvider>
   );
 }

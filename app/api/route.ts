@@ -1,3 +1,10 @@
+import { NextRequest, NextResponse } from "next/server";
+import { 
+  defaultBotProfile, 
+  defaultServiceOptions, 
+  defaultConfig 
+} from "../../rtvi.config";
+
 // [POST] /api
 export async function POST(request: Request) {
   const { services, config } = await request.json();
@@ -9,12 +16,13 @@ export async function POST(request: Request) {
   }
 
   const payload = {
-    bot_profile: "voice_2024_08",
+    bot_profile: defaultBotProfile,
     max_duration: 600,
     services,
     api_keys: {
       // Optional API keys here (e.g. OpenAI GPT-4 etc)
     },
+    service_options: defaultServiceOptions.service_options,
     config,
   };
 
